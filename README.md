@@ -1,0 +1,1 @@
+# Common Typescript client SDK template for fireboom

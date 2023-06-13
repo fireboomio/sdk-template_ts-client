@@ -1,0 +1,8 @@
+{
+  "name": "Typescript client",
+  "author": "fireboom",
+  "version": "0.1.0",
+  "description": "Base typescript client",
+  "outputPath": "./sdk/ts-client",
+  "enabled": true
+}
