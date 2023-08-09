@@ -143,23 +143,23 @@ export class WunderGraphClient extends Client {
 }
 
 export const createClient = (config?: CreateClientConfig) => {
-	return new WunderGraphClient({
-		...defaultClientConfig,
-		...config,
-		operationMetadata,
-		csrfEnabled: {{isNotEmpty authProviders}},
-	});
+  return new WunderGraphClient({
+      ...defaultClientConfig,
+      ...config,
+      operationMetadata,
+      csrfEnabled: {{isNotEmpty authProviders}},
+    });
 };
 
 export type Queries = {
 {{#each operations}}
     {{#if (isAllTrue isQuery (invertBool isInternal))}}
-        '{{path}}': {
-        {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-        data: {{name}}ResponseData
-        requiresAuthentication: {{authRequired}}
-        {{~#if isLiveQuery}}liveQuery: boolean{{/if}}
-        }
+  '{{path}}': {
+     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     data: {{name}}ResponseData
+     requiresAuthentication: {{authRequired}}
+     {{~#if isLiveQuery}}liveQuery: boolean{{/if}}
+  }
     {{/if}}
 {{/each}}
 }
@@ -167,11 +167,11 @@ export type Queries = {
 export type Mutations = {
 {{#each operations}}
     {{#if (isAlltrue isMutation (invertBool isInternal))}}
-        '{{path}}': {
-        {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-        data: {{name}}ResponseData
-        requiresAuthentication: {{authRequired}}
-        }
+  '{{path}}': {
+     {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     data: {{name}}ResponseData
+     requiresAuthentication: {{authRequired}}
+  }
     {{/if}}
 {{/each}}
 }
@@ -179,11 +179,11 @@ export type Mutations = {
 export type Subscriptions = {
 {{#each operations}}
     {{#if (isAllTrue isSubscription (invertBool isInternal))}}
-        '{{path}}': {
-        {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-        data: {{name}}ResponseData
-        requiresAuthentication: {{authRequired}}
-        }
+  '{{path}}': {
+     {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     data: {{name}}ResponseData
+     requiresAuthentication: {{authRequired}}
+  }
     {{/if}}
 {{/each}}
 }
@@ -191,12 +191,12 @@ export type Subscriptions = {
 export type LiveQueries = {
 {{#each operations}}
     {{#if (isAllTrue isMutation isLiveQuery (invertBool isInternal))}}
-        "{{path}}": {
-        {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-        data: {{name}}ResponseData
-        liveQuery: true
-        requiresAuthentication: {{authRequired}}
-        }
+  "{{path}}": {
+     {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     data: {{name}}ResponseData
+     liveQuery: true
+     requiresAuthentication: {{authRequired}}
+  }
     {{/if}}
 {{/each}}
 }

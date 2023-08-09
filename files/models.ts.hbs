@@ -1,6 +1,8 @@
 {{~#if operations}}
-    {{#each operations}}
+    {{~#each operations}}
+        {{#equal engine 1}}
 import type function_{{name}} from '../operations/{{path}}'
+        {{/equal}}
     {{/each}}
 import type { ExtractResponse } from 'fireboom-wundersdk/operations'
     {{#each operations~}}
