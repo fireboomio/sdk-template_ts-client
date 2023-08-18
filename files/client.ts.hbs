@@ -158,7 +158,7 @@ export type Queries = {
      {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
      data: {{name}}ResponseData
      requiresAuthentication: {{authRequired}}
-     {{~#if isLiveQuery}}liveQuery: boolean{{/if}}
+     {{#if isLiveQuery}}liveQuery: boolean{{/if}}
   }
     {{/if}}
 {{/each}}
@@ -180,7 +180,7 @@ export type Subscriptions = {
 {{#each operations}}
     {{#if (isAllTrue isSubscription (invertBool isInternal))}}
   '{{path}}': {
-     {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
      data: {{name}}ResponseData
      requiresAuthentication: {{authRequired}}
   }
@@ -192,7 +192,7 @@ export type LiveQueries = {
 {{#each operations}}
     {{#if (isAllTrue isMutation isLiveQuery (invertBool isInternal))}}
   "{{path}}": {
-     {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
      data: {{name}}ResponseData
      liveQuery: true
      requiresAuthentication: {{authRequired}}
