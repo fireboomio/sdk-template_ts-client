@@ -168,7 +168,7 @@ export type Mutations = {
 {{#each operations}}
     {{#if (isAlltrue isMutation (invertBool isInternal))}}
   '{{path}}': {
-     {{~#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
      data: {{name}}ResponseData
      requiresAuthentication: {{authRequired}}
   }
