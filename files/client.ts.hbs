@@ -1,18 +1,18 @@
 import {
-    Client,
-    ClientConfig,
-    CreateClientConfig,
-    User,
-    UploadRequestOptions,
-    OperationMetadata,
-    OperationsDefinition,
-    OperationRequestOptions,
-    SubscriptionRequestOptions,
-    SubscriptionEventHandler,
-    FetchUserRequestOptions,
-    UploadValidationOptions,
-    ExtractProfileName,
-    ExtractMeta
+  Client,
+  ClientConfig,
+  CreateClientConfig,
+  User,
+  UploadRequestOptions,
+  OperationMetadata,
+  OperationsDefinition,
+  OperationRequestOptions,
+  SubscriptionRequestOptions,
+  SubscriptionEventHandler,
+  FetchUserRequestOptions,
+  UploadValidationOptions,
+  ExtractProfileName,
+  ExtractMeta
 } from "fireboom-wundersdk/client";
 
 import type { CustomClaims, Role } from './claims'
@@ -28,67 +28,67 @@ export interface UploadResponse { key: string }
 
 type S3Providers ={
 {{#each s3Providers}}
-    {{name}}: {
+  {{name}}: {
     hasProfiles: {{#if uploadProfiles}}true{{else}}false{{/if}},
     profiles: {
     {{#each uploadProfiles}}
         {{@key}}: any
     {{/each}}
     }
-    }
+  }
 {{/each}}
 }
 
 const S3UploadProviderData: { [provider: string]: { [profile: string]: UploadValidationOptions } } = {
-	{{#each s3Providers}}
-    {{name}}: {
-        {{#each uploadProfiles}}
-            {{@key}}: {
-                requireAuthentication: {{#if this.requireAuthentication}}true{{else}}false{{/if}},
-                {{#if this.maxAllowedUploadSizeBytes includeZero=true}}
-                maxAllowedUploadSizeBytes: {{this.maxAllowedUploadSizeBytes}},
-                {{/if}}
-                {{#if this.maxAllowedFiles includeZero=true}}
-                maxAllowedFiles: {{this.maxAllowedFiles}},
-                {{/if}}
-                {{#if this.allowedMimeTypes}}
-                allowedMimeTypes: [{{#each this.allowedMimeTypes}}'{{this}}',{{/each}}],
-                {{/if}}
-                {{#if this.allowedFileExtensions}}
-                allowedFileExtensions: [{{#each this.allowedFileExtensions}}'{{this}}',{{/each}}],
-                {{/if}}
-            },
-        {{/each}}
-    },
-	{{/each}}
+{{#each s3Providers}}
+  {{name}}: {
+    {{#each uploadProfiles}}
+      {{@key}}: {
+        requireAuthentication: {{#if this.requireAuthentication}}true{{else}}false{{/if}},
+        {{#if this.maxAllowedUploadSizeBytes includeZero=true}}
+        maxAllowedUploadSizeBytes: {{this.maxAllowedUploadSizeBytes}},
+        {{/if}}
+        {{#if this.maxAllowedFiles includeZero=true}}
+        maxAllowedFiles: {{this.maxAllowedFiles}},
+        {{/if}}
+        {{#if this.allowedMimeTypes}}
+        allowedMimeTypes: [{{#each this.allowedMimeTypes}}'{{this}}',{{/each}}],
+        {{/if}}
+        {{#if this.allowedFileExtensions}}
+        allowedFileExtensions: [{{#each this.allowedFileExtensions}}'{{this}}',{{/each}}],
+        {{/if}}
+      },
+    {{/each}}
+  },
+{{/each}}
 }
 {{/if}}
 
 {{#if (isNotEmpty authProviders)}}
 export enum AuthProviderId {
-    {{#each authProviders}}
-    "{{id}}" = "{{id}}",
-    {{/each}}
+  {{#each authProviders}}
+  "{{id}}" = "{{id}}",
+  {{/each}}
 }
 
 export interface AuthProvider {
-    id: AuthProviderId;
-    login: (redirectURI?: string) => void;
+  id: AuthProviderId;
+  login: (redirectURI?: string) => void;
 }
 {{/if}}
 
 export const defaultClientConfig: ClientConfig = {
-    applicationHash: "{{applicationHash}}",
-    baseURL: "{{baseURL}}",
-    sdkVersion: "{{sdkVersion}}",
+  applicationHash: "{{applicationHash}}",
+  baseURL: "{{baseURL}}",
+  sdkVersion: "{{sdkVersion}}",
 }
 
 export const operationMetadata: OperationMetadata = {
 {{#each operations}}
-    "{{path}}": {
-        requiresAuthentication: {{authRequired}}
-		}
-    {{#unless @last}},{{/unless}}
+  "{{path}}": {
+    requiresAuthentication: {{authRequired}}
+  }
+  {{#unless @last}},{{/unless}}
 {{/each}}
 }
 
@@ -144,21 +144,21 @@ export class WunderGraphClient extends Client {
 
 export const createClient = (config?: CreateClientConfig) => {
   return new WunderGraphClient({
-      ...defaultClientConfig,
-      ...config,
-      operationMetadata,
-      csrfEnabled: {{isNotEmpty authProviders}},
-    });
+    ...defaultClientConfig,
+    ...config,
+    operationMetadata,
+    csrfEnabled: {{enableCSRFProtect}},
+  });
 };
 
 export type Queries = {
 {{#each operations}}
     {{#if (isAllTrue isQuery (invertBool isInternal))}}
   '{{path}}': {
-     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-     data: {{name}}ResponseData
-     requiresAuthentication: {{authRequired}}
-     {{#if isLiveQuery}}liveQuery: boolean{{/if}}
+    {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+    data: {{name}}ResponseData
+    requiresAuthentication: {{authRequired}}
+    {{#if isLiveQuery}}liveQuery: boolean{{/if}}
   }
     {{/if}}
 {{/each}}
@@ -166,11 +166,11 @@ export type Queries = {
 
 export type Mutations = {
 {{#each operations}}
-    {{#if (isAllTrue isMutation (invertBool isInternal))}}
+    {{#if isMutation}}
   '{{path}}': {
-     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-     data: {{name}}ResponseData
-     requiresAuthentication: {{authRequired}}
+    {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+    data: {{name}}ResponseData
+    requiresAuthentication: {{authRequired}}
   }
     {{/if}}
 {{/each}}
@@ -180,9 +180,9 @@ export type Subscriptions = {
 {{#each operations}}
     {{#if (isAllTrue isSubscription (invertBool isInternal))}}
   '{{path}}': {
-     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-     data: {{name}}ResponseData
-     requiresAuthentication: {{authRequired}}
+    {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+    data: {{name}}ResponseData
+    requiresAuthentication: {{authRequired}}
   }
     {{/if}}
 {{/each}}
@@ -192,10 +192,10 @@ export type LiveQueries = {
 {{#each operations}}
     {{#if (isAllTrue isMutation isLiveQuery (invertBool isInternal))}}
   "{{path}}": {
-     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-     data: {{name}}ResponseData
-     liveQuery: true
-     requiresAuthentication: {{authRequired}}
+    {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
+    data: {{name}}ResponseData
+    liveQuery: true
+    requiresAuthentication: {{authRequired}}
   }
     {{/if}}
 {{/each}}
