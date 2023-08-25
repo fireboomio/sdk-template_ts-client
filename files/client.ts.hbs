@@ -156,9 +156,9 @@ export type Queries = {
     {{#if (isAllTrue isQuery (invertBool isInternal))}}
   '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{name}}ResponseData
+    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
     requiresAuthentication: {{authRequired}}
-    {{#if isLiveQuery}}liveQuery: boolean{{/if}}
+    {{#if isLiveQuery}}liveQuery: true{{/if}}
   }
     {{/if}}
 {{/each}}
@@ -166,10 +166,10 @@ export type Queries = {
 
 export type Mutations = {
 {{#each operations}}
-    {{#if isMutation}}
+    {{#if (isAllTrue isMutation (invertBool isInternal))}}
   '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{name}}ResponseData
+    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
     requiresAuthentication: {{authRequired}}
   }
     {{/if}}
@@ -181,7 +181,7 @@ export type Subscriptions = {
     {{#if (isAllTrue isSubscription (invertBool isInternal))}}
   '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{name}}ResponseData
+    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
     requiresAuthentication: {{authRequired}}
   }
     {{/if}}
@@ -190,10 +190,10 @@ export type Subscriptions = {
 
 export type LiveQueries = {
 {{#each operations}}
-    {{#if (isAllTrue isMutation isLiveQuery (invertBool isInternal))}}
+    {{#if (isAllTrue isQuery isLiveQuery (invertBool isInternal))}}
   "{{path}}": {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{name}}ResponseData
+    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
     liveQuery: true
     requiresAuthentication: {{authRequired}}
   }
