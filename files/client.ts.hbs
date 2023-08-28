@@ -47,13 +47,13 @@ const S3UploadProviderData: { [provider: string]: { [profile: string]: UploadVal
         requireAuthentication: {{#if this.requireAuthentication}}true{{else}}false{{/if}},
         {{#if this.maxAllowedUploadSizeBytes includeZero=true}}
         maxAllowedUploadSizeBytes: {{this.maxAllowedUploadSizeBytes}},
-        {{/if}}
+        {{/if~}}
         {{#if this.maxAllowedFiles includeZero=true}}
         maxAllowedFiles: {{this.maxAllowedFiles}},
-        {{/if}}
+        {{/if~}}
         {{#if this.allowedMimeTypes}}
         allowedMimeTypes: [{{#each this.allowedMimeTypes}}'{{this}}',{{/each}}],
-        {{/if}}
+        {{/if~}}
         {{#if this.allowedFileExtensions}}
         allowedFileExtensions: [{{#each this.allowedFileExtensions}}'{{this}}',{{/each}}],
         {{/if}}
@@ -158,7 +158,7 @@ export type Queries = {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
     data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
     requiresAuthentication: {{authRequired}}
-    {{#if isLiveQuery}}liveQuery: true{{/if}}
+    {{#if isLiveQuery}}liveQuery: boolean{{/if}}
   }
     {{/if}}
 {{/each}}
