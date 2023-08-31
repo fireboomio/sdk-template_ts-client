@@ -39,6 +39,16 @@ type S3Providers ={
 {{/each}}
 }
 
+const S3ProviderData = {
+{{#each s3Providers}}
+  {{name}}: {
+    useSSL: {{useSSL}},
+    bucketName: '{{bucketName.staticVariableContent}}',
+    endpoint: '{{endpoint.staticVariableContent}}'
+  }{{#unless @last}},{{/unless}}
+{{/each}}
+}
+
 const S3UploadProviderData: { [provider: string]: { [profile: string]: UploadValidationOptions } } = {
 {{#each s3Providers}}
   {{name}}: {
@@ -131,7 +141,12 @@ export class WunderGraphClient extends Client {
         >
     >(config: UploadRequestOptions<ProviderName, ProfileName, Meta>) {
         const profile = config.profile ? S3UploadProviderData[config.provider][config.profile as string] : undefined;
-        return super.uploadFiles(config, profile);
+        return super.uploadFiles(config, profile).then((resp) => {
+          if (config.appendEndpoint) {
+            resp.fileKeys = resp.fileKeys.map(k => `${S3ProviderData[config.provider]}/${k}`)
+          }
+          return resp
+        });
     }
 	{{/if}}
 	public login(authProviderID: Operations['authProvider'], redirectURI?: string) {
