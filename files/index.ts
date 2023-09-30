@@ -1,5 +1,3 @@
 import { createClient } from './client';
 
-export const client = createClient({
-
-});
+export const client = createClient();

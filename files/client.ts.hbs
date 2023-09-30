@@ -1,38 +1,38 @@
 import {
   Client,
-  ClientConfig,
-  CreateClientConfig,
-  User,
-  UploadRequestOptions,
-  OperationMetadata,
-  OperationsDefinition,
-  OperationRequestOptions,
-  SubscriptionRequestOptions,
-  SubscriptionEventHandler,
-  FetchUserRequestOptions,
-  UploadValidationOptions,
-  ExtractProfileName,
-  ExtractMeta
-} from "fireboom-wundersdk/client";
+  type ClientConfig,
+  type ExtractMeta,
+  type ExtractProfileName,
+  type FetchUserRequestOptions,
+  type MutationRequestOptions,
+  type OperationsDefinition,
+  type OperationMetadata,
+  type QueryRequestOptions,
+  type SubscriptionRequestOptions,
+  type SubscriptionEventHandler,
+  type UploadValidationOptions,
+  type UploadRequestOptions,
+  type User,
+} from "@fireboom/client";
+import type { {{> import_partial operations=operations}} } from './models'
 
-import type { CustomClaims, Role } from './claims'
-import type { {{> operation_partial operations=operations includeInternal=false includeResponseData=true}} } from './models'
+export type Role = "{{{joinString '" | "' roles}}}"
 
-export const WUNDERGRAPH_S3_ENABLED = {{isNotEmpty s3Providers}}
-export const WUNDERGRAPH_AUTH_ENABLED = {{isNotEmpty authProviders}}
+export type CustomClaims = Record<string, any>
+
+export const S3_ENABLED = {{isNotEmpty s3Providers}}
+export const AUTH_ENABLED = {{isNotEmpty authProviders}}
 
 {{#if (isNotEmpty s3Providers)}}
 export interface UploadResponse { key: string }
-
-// TODO: missing upload profiles
 
 type S3Providers ={
 {{#each s3Providers}}
   {{name}}: {
     hasProfiles: {{#if uploadProfiles}}true{{else}}false{{/if}},
     profiles: {
-    {{#each uploadProfiles}}
-        {{@key}}: any
+    {{#each uploadProfiles }}
+      {{@key}}: {{../name}}_{{@key}}ProfileMeta
     {{/each}}
     }
   }
@@ -49,25 +49,25 @@ const S3ProviderData = {
 {{/each}}
 }
 
-const S3UploadProviderData: { [provider: string]: { [profile: string]: UploadValidationOptions } } = {
+const S3ProfileData: { [provider: string]: { [profile: string]: UploadValidationOptions } } = {
 {{#each s3Providers}}
   {{name}}: {
     {{#each uploadProfiles}}
-      {{@key}}: {
-        requireAuthentication: {{#if this.requireAuthentication}}true{{else}}false{{/if}},
-        {{#if this.maxAllowedUploadSizeBytes includeZero=true}}
-        maxAllowedUploadSizeBytes: {{this.maxAllowedUploadSizeBytes}},
-        {{/if~}}
-        {{#if this.maxAllowedFiles includeZero=true}}
-        maxAllowedFiles: {{this.maxAllowedFiles}},
-        {{/if~}}
-        {{#if this.allowedMimeTypes}}
-        allowedMimeTypes: [{{#each this.allowedMimeTypes}}'{{this}}',{{/each}}],
-        {{/if~}}
-        {{#if this.allowedFileExtensions}}
-        allowedFileExtensions: [{{#each this.allowedFileExtensions}}'{{this}}',{{/each}}],
-        {{/if}}
-      },
+    {{@key}}: {
+      requireAuthentication: {{#if this.requireAuthentication}}true{{else}}false{{/if}},
+      {{#if this.maxAllowedUploadSizeBytes includeZero=true}}
+      maxAllowedUploadSizeBytes: {{this.maxAllowedUploadSizeBytes}},
+      {{/if~}}
+      {{#if this.maxAllowedFiles includeZero=true}}
+      maxAllowedFiles: {{this.maxAllowedFiles}},
+      {{/if~}}
+      {{#if this.allowedMimeTypes}}
+      allowedMimeTypes: [{{#each this.allowedMimeTypes}}'{{this}}',{{/each}}],
+      {{/if~}}
+      {{#if this.allowedFileExtensions}}
+      allowedFileExtensions: [{{#each this.allowedFileExtensions}}'{{this}}',{{/each}}],
+      {{/if}}
+    },
     {{/each}}
   },
 {{/each}}
@@ -77,7 +77,7 @@ const S3UploadProviderData: { [provider: string]: { [profile: string]: UploadVal
 {{#if (isNotEmpty authProviders)}}
 export enum AuthProviderId {
   {{#each authProviders}}
-  "{{id}}" = "{{id}}",
+  "{{id}}" = "{{id}}"{{#unless @last}},{{/unless}}
   {{/each}}
 }
 
@@ -97,57 +97,56 @@ export const operationMetadata: OperationMetadata = {
 {{#each operations}}
   "{{path}}": {
     requiresAuthentication: {{authRequired}}
-  }
-  {{#unless @last}},{{/unless}}
+  }{{#unless @last}},{{/unless}}
 {{/each}}
 }
 
-export class WunderGraphClient extends Client {
+export class FBClient extends Client {
 	query<
 		OperationName extends Extract<keyof Operations['queries'], string>,
 		Input extends Operations['queries'][OperationName]['input'] = Operations['queries'][OperationName]['input'],
-		Data extends Operations['queries'][OperationName]['data'] = Operations['queries'][OperationName]['data']
-	>(options: OperationName extends string ? OperationRequestOptions<OperationName, Input> : OperationRequestOptions) {
-		return super.query<OperationRequestOptions, Data>(options);
+		Response extends Operations['queries'][OperationName]['response'] = Operations['queries'][OperationName]['response']
+	>(options: OperationName extends string ? QueryRequestOptions<OperationName, Input> : QueryRequestOptions) {
+		return super.query<QueryRequestOptions, Response['data'], Response['error']>(options);
 	}
 	mutate<
 		OperationName extends Extract<keyof Operations['mutations'], string>,
 		Input extends Operations['mutations'][OperationName]['input'] = Operations['mutations'][OperationName]['input'],
-		Data extends Operations['mutations'][OperationName]['data'] = Operations['mutations'][OperationName]['data']
-	>(options: OperationName extends string ? OperationRequestOptions<OperationName, Input> : OperationRequestOptions) {
-		return super.mutate<OperationRequestOptions, Data>(options);
+		Response extends Operations['mutations'][OperationName]['response'] = Operations['mutations'][OperationName]['response']
+	>(options: OperationName extends string ? MutationRequestOptions<OperationName, Input> : MutationRequestOptions) {
+		return super.mutate<MutationRequestOptions, Response['data'], Response['error']>(options);
 	}
 	subscribe<
-		OperationName extends Extract<keyof Operations['subscriptions'], string>,
-		Input extends Operations['subscriptions'][OperationName]['input'] = Operations['subscriptions'][OperationName]['input'],
-		Data extends Operations['subscriptions'][OperationName]['data'] = Operations['subscriptions'][OperationName]['data']
+		OperationName extends Extract<keyof Operations["subscriptions"], string>,
+		Input extends Operations["subscriptions"][OperationName]["input"] = Operations["subscriptions"][OperationName]["input"],
+		Response extends Operations["subscriptions"][OperationName]["response"] = Operations["subscriptions"][OperationName]["response"],
 	>(
 		options: OperationName extends string
 			? SubscriptionRequestOptions<OperationName, Input>
 			: SubscriptionRequestOptions,
-		cb: SubscriptionEventHandler<Data>
+		cb?: SubscriptionEventHandler<Response["data"], Response["error"]>
 	) {
-		return super.subscribe(options, cb);
+		return super.subscribe<SubscriptionRequestOptions, Response["data"], Response["error"]>(options, cb)
 	}
 	{{#if (isNotEmpty s3Providers)}}
-    public async uploadFiles<
-        ProviderName extends Extract<keyof S3Providers, string>,
-        ProfileName extends ExtractProfileName<S3Providers[ProviderName]['profiles']> = ExtractProfileName<
-        S3Providers[ProviderName]['profiles']
-        >,
-        Meta extends ExtractMeta<S3Providers[ProviderName]['profiles'], ProfileName> = ExtractMeta<
-        S3Providers[ProviderName]['profiles'],
-        ProfileName
-        >
-    >(config: UploadRequestOptions<ProviderName, ProfileName, Meta> & { appendEndpoint?: boolean }) {
-        const profile = config.profile ? S3UploadProviderData[config.provider][config.profile as string] : undefined;
-        return super.uploadFiles(config, profile).then((resp) => {
-          if (config.appendEndpoint) {
-            resp.fileKeys = resp.fileKeys.map(k => `${S3ProviderData[config.provider]}/${k}`)
-          }
-          return resp
-        });
-    }
+  public async uploadFiles<
+    ProviderName extends Extract<keyof S3Providers, string>,
+    ProfileName extends ExtractProfileName<S3Providers[ProviderName]['profiles']>
+      = ExtractProfileName<S3Providers[ProviderName]['profiles']>,
+    Meta extends ExtractMeta<S3Providers[ProviderName]['profiles'], ProfileName>
+      = ExtractMeta<S3Providers[ProviderName]['profiles'], ProfileName>
+  >(config: UploadRequestOptions<ProviderName, ProfileName, Meta> & { appendEndpoint?: boolean }) {
+    const profile = config.profile ? S3ProfileData[config.provider][config.profile as string] : undefined;
+    return super.uploadFiles(config, profile).then((resp) => {
+      if (config.appendEndpoint !== false) {
+        const { useSSL, bucketName, endpoint } = S3ProviderData[config.provider] ?? {}
+        resp.fileKeys = resp.fileKeys.map(
+          k => `${useSSL ? `https://` : `http://`}${bucketName}.${endpoint}/${k}`
+        )
+      }
+      return resp
+    });
+  }
 	{{/if}}
 	public login(authProviderID: Operations['authProvider'], redirectURI?: string) {
 		return super.login(authProviderID, redirectURI);
@@ -157,8 +156,8 @@ export class WunderGraphClient extends Client {
 	}
 }
 
-export const createClient = (config?: CreateClientConfig) => {
-  return new WunderGraphClient({
+export const createClient = (config?: ClientConfig) => {
+  return new Client({
     ...defaultClientConfig,
     ...config,
     operationMetadata,
@@ -171,7 +170,7 @@ export type Queries = {
     {{#if (isAllTrue isQuery (invertBool isInternal))}}
   '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
+    response: {{#if (equalAny engine 2)}}any{{else}}{{name}}Response{{/if}}
     requiresAuthentication: {{authRequired}}
     {{#if isLiveQuery}}liveQuery: boolean{{/if}}
   }
@@ -184,7 +183,7 @@ export type Mutations = {
     {{#if (isAllTrue isMutation (invertBool isInternal))}}
   '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
+    response: {{#if (equalAny engine 2)}}any{{else}}{{name}}Response{{/if}}
     requiresAuthentication: {{authRequired}}
   }
     {{/if}}
@@ -193,11 +192,12 @@ export type Mutations = {
 
 export type Subscriptions = {
 {{#each operations}}
-    {{#if (isAllTrue isSubscription (invertBool isInternal))}}
+    {{#if (isAllTrue (isAnyTrue isSubscription (isAllTrue isQuery isLiveQuery)) (invertBool isInternal) )}}
   '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
+    response: {{#if (equalAny engine 2)}}any{{else}}{{name}}Response{{/if}}
     requiresAuthentication: {{authRequired}}
+    {{#if isQuery}}liveQuery: true{{/if}}
   }
     {{/if}}
 {{/each}}
@@ -208,7 +208,7 @@ export type LiveQueries = {
     {{#if (isAllTrue isQuery isLiveQuery (invertBool isInternal))}}
   "{{path}}": {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
-    data: {{#if (equalAny engine 2)}}any{{else}}{{name}}ResponseData{{/if}}
+    response: {{#if (equalAny engine 2)}}any{{else}}{{name}}Response{{/if}}
     liveQuery: true
     requiresAuthentication: {{authRequired}}
   }
@@ -216,4 +216,4 @@ export type LiveQueries = {
 {{/each}}
 }
 
-export interface Operations extends OperationsDefinition<Queries, Mutations, Subscriptions, Role,{{#if (isNotEmpty s3Providers)}}S3Providers{{else}}{}{{/if}}{{#if (isNotEmpty authProviders)}},keyof typeof AuthProviderId{{/if}}> {}
+export interface Operations extends OperationsDefinition<Queries, Mutations, Subscriptions, LiveQueries, Role,{{#if (isNotEmpty s3Providers)}} S3Providers{{else}}{}{{/if}}{{#if (isNotEmpty authProviders)}}, keyof typeof AuthProviderId{{/if}}> {}
