@@ -136,8 +136,8 @@ export class FBClient extends Client {
     Meta extends ExtractMeta<S3Providers[ProviderName]['profiles'], ProfileName>
       = ExtractMeta<S3Providers[ProviderName]['profiles'], ProfileName>
   >(config: UploadRequestOptions<ProviderName, ProfileName, Meta> & { appendEndpoint?: boolean }) {
-    const profile = config.profile ? S3ProfileData[config.provider][config.profile as string] : undefined;
-    return super.uploadFiles(config, profile).then((resp) => {
+    const validation = config.profile ? S3ProfileData[config.provider][config.profile as string] : undefined;
+    return super.uploadFiles(config, validation).then((resp) => {
       if (config.appendEndpoint !== false) {
         const { useSSL, bucketName, endpoint } = S3ProviderData[config.provider] ?? {}
         resp.fileKeys = resp.fileKeys.map(
@@ -157,7 +157,7 @@ export class FBClient extends Client {
 }
 
 export const createClient = (config?: ClientConfig) => {
-  return new Client({
+  return new FBClient({
     ...defaultClientConfig,
     ...config,
     operationMetadata,
