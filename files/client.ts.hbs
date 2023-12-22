@@ -129,6 +129,7 @@ export class FBClient extends Client {
 		return super.subscribe<SubscriptionRequestOptions, Response["data"], Response["error"]>(options, cb)
 	}
 	{{#if (isNotEmpty s3Providers)}}
+  // @ts-ignore
   public async uploadFiles<
     ProviderName extends Extract<keyof S3Providers, string>,
     ProfileName extends ExtractProfileName<S3Providers[ProviderName]['profiles']>
@@ -137,6 +138,7 @@ export class FBClient extends Client {
       = ExtractMeta<S3Providers[ProviderName]['profiles'], ProfileName>
   >(config: UploadRequestOptions<ProviderName, ProfileName, Meta> & { appendEndpoint?: boolean }) {
     const validation = config.profile ? S3ProfileData[config.provider][config.profile as string] : undefined;
+    // @ts-ignore
     return super.uploadFiles(config, validation).then((resp) => {
       if (config.appendEndpoint !== false) {
         const { useSSL, bucketName, endpoint } = S3ProviderData[config.provider] ?? {}
