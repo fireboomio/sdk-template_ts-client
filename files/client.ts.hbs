@@ -13,10 +13,11 @@ import {
   type UploadValidationOptions,
   type UploadRequestOptions,
   type User,
-} from "@fireboom/client";
+  type LowLevelRequestOptions
+} from '@fireboom/client'
 import type { {{> import_partial operations=operations}} } from './models'
 
-export type Role = "{{{joinString '" | "' roles}}}"
+export type Role = '{{{joinString '\' | \'' roles}}}'
 
 export type CustomClaims = Record<string, any>
 
@@ -77,7 +78,7 @@ const S3ProfileData: { [provider: string]: { [profile: string]: UploadValidation
 {{#if (isNotEmpty authProviders)}}
 export enum AuthProviderId {
   {{#each authProviders}}
-  "{{id}}" = "{{id}}"{{#unless @last}},{{/unless}}
+  '{{id}}' = '{{id}}'{{#unless @last}},{{/unless}}
   {{/each}}
 }
 
@@ -88,14 +89,14 @@ export interface AuthProvider {
 {{/if}}
 
 export const defaultClientConfig: ClientConfig = {
-  applicationHash: "{{applicationHash}}",
-  baseURL: "{{baseURL}}",
-  sdkVersion: "{{sdkVersion}}",
+  applicationHash: '{{applicationHash}}',
+  baseURL: '{{baseURL}}',
+  sdkVersion: '{{sdkVersion}}'
 }
 
 export const operationMetadata: OperationMetadata = {
 {{#each operations}}
-  "{{path}}": {
+  '{{path}}': {
     requiresAuthentication: {{authRequired}}
   }{{#unless @last}},{{/unless}}
 {{/each}}
@@ -117,16 +118,16 @@ export class FBClient extends Client {
 		return super.mutate<MutationRequestOptions, Response['data'], Response['error']>(options);
 	}
 	subscribe<
-		OperationName extends Extract<keyof Operations["subscriptions"], string>,
-		Input extends Operations["subscriptions"][OperationName]["input"] = Operations["subscriptions"][OperationName]["input"],
-		Response extends Operations["subscriptions"][OperationName]["response"] = Operations["subscriptions"][OperationName]["response"],
+		OperationName extends Extract<keyof Operations['subscriptions'], string>,
+		Input extends Operations['subscriptions'][OperationName]['input'] = Operations['subscriptions'][OperationName]['input'],
+		Response extends Operations['subscriptions'][OperationName]['response'] = Operations['subscriptions'][OperationName]['response'],
 	>(
 		options: OperationName extends string
 			? SubscriptionRequestOptions<OperationName, Input>
 			: SubscriptionRequestOptions,
-		cb?: SubscriptionEventHandler<Response["data"], Response["error"]>
+		cb?: SubscriptionEventHandler<Response['data'], Response['error']>
 	) {
-		return super.subscribe<SubscriptionRequestOptions, Response["data"], Response["error"]>(options, cb)
+		return super.subscribe<SubscriptionRequestOptions, Response['data'], Response['error']>(options, cb)
 	}
   doRequest<OperationName extends keyof Queries | keyof Mutations | keyof Subscriptions>(
     options: LowLevelRequestOptions<OperationName>
@@ -213,7 +214,7 @@ export type Subscriptions = {
 export type LiveQueries = {
 {{#each operations}}
     {{#if (isAllTrue isQuery isLiveQuery (invertBool isInternal))}}
-  "{{path}}": {
+  '{{path}}': {
     {{#if hasInput}}input: {{name}}Input{{else}}input?: undefined{{/if}}
     response: {{#if (equalAny engine 2)}}any{{else}}{{name}}Response{{/if}}
     liveQuery: true
