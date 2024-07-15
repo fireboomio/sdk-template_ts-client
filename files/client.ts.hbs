@@ -27,7 +27,7 @@ export const AUTH_ENABLED = {{isNotEmpty authProviders}}
 {{#if (isNotEmpty s3Providers)}}
 export interface UploadResponse { key: string }
 
-type S3Providers ={
+export type S3Providers ={
 {{#each s3Providers}}
   {{name}}: {
     hasProfiles: {{#if uploadProfiles}}true{{else}}false{{/if}},
@@ -40,7 +40,7 @@ type S3Providers ={
 {{/each}}
 }
 
-const S3ProviderData = {
+export const S3ProviderData = {
 {{#each s3Providers}}
   {{name}}: {
     useSSL: {{useSSL}},
@@ -50,7 +50,7 @@ const S3ProviderData = {
 {{/each}}
 }
 
-const S3ProfileData: { [provider: string]: { [profile: string]: UploadValidationOptions } } = {
+export const S3ProfileData: { [provider: string]: { [profile: string]: UploadValidationOptions } } = {
 {{#each s3Providers}}
   {{name}}: {
     {{#each uploadProfiles}}
@@ -102,6 +102,15 @@ export const operationMetadata: OperationMetadata = {
 {{/each}}
 }
 
+export function getS3FullUrl(provider: keyof typeof S3ProviderData, filePath?: string) {
+  const { useSSL, bucketName, endpoint } = S3ProviderData[provider] ?? {}
+  const arr = [`http${useSSL ? 's' : ''}://${bucketName}.${endpoint}`]
+  if (filePath) {
+    arr.push(filePath)
+  }
+  return arr.join('/')
+}
+
 export class FBClient extends Client {
 	query<
 		OperationName extends Extract<keyof Operations['queries'], string>,
@@ -147,13 +156,15 @@ export class FBClient extends Client {
     // @ts-ignore
     return super.uploadFiles(config, validation).then((resp) => {
       if (config.appendEndpoint !== false) {
-        const { useSSL, bucketName, endpoint } = S3ProviderData[config.provider] ?? {}
         resp.fileKeys = resp.fileKeys.map(
-          k => `${useSSL ? `https://` : `http://`}${bucketName}.${endpoint}/${k}`
+          k => getS3FullUrl(config.provider, k)
         )
       }
       return resp
     });
+  }
+  public getS3FullUrl(provider: keyof typeof S3ProviderData, filePath?: string) {
+    return getS3FullUrl(provider, filePath)
   }
 	{{/if}}
 	public login(authProviderID: Operations['authProvider'], redirectURI?: string) {
