@@ -26,7 +26,7 @@ export type {{joinString '_' documentPath}} = {{#if fields}}{
 export enum {{upperFirst name}} {
   {{#each values}}
   {{#if description}}/** {{description}} */
-  {{/if}}{{upperFirst (getOrDefault aliasKeys this this)}} = '{{this}}'{{#unless @last}},{{/unless}}
+  {{/if}}{{#unless (equalAny valueType ',string')}}_{{/unless}}{{upperFirst (getOrDefault valueVarnameMap this this)}} = {{#if (equalAny valueType ',string')}}'{{this}}'{{else}}{{this}}{{/if}}{{#unless @last}},{{/unless}}
   {{/each}}
 }
 {{/each}}
